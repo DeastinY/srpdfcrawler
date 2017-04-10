@@ -1,66 +1,83 @@
 """Place pdf in pdf/* and parse them using this file."""
+import re
 import os
+import nltk
 import shutil
 import logging
+import textract
 from tempdir import tempfile
-from PyPDF2 import PdfFileReader
 
 logging.basicConfig(level=logging.DEBUG)
 
-def remove_encryption(filename):
-    """Tries to remove pdf-encryption using qpdf."""
-    logging.warning("The PDF is encrypted ! Trying to remove encryption ...")
-    # Things from the subprocess module don't rely on the shell unless you
-    # explicitly ask for it and can accept a pre-split list of arguments,
-    # making calling subprocesses much safer.
-    # (If you really do need to split quoted stuff, use shlex.split() instead)
-    from subprocess import check_call
-    # Use try/finally to ensure our cleanup code gets run
-    try:
-        # There are a lot of ways to mess up creating temporary files in a way
-        # that's free of race conditions, so just use mkdtemp() to safely
-        # create a temporary folder that only we have permission to work inside
-        # (We ask for it to be made in the same folder as filename because /tmp
-        #  might be on a different drive, which would make the final overwrite
-        #  into a slow "copy and delete" rather than a fast os.rename())
-        tempdir = tempfile.mkdtemp(dir=os.path.dirname(filename))
+def separate_sentences(txtfile):
+    """Generates a list where every line is a sentence."""
+    with open(txtfile, 'r') as fin:
+        lines = fin.readlines()
+        lines = '\n'.join(lines)
+        sentences = nltk.sent_tokenize(lines)
+        tokenized_sentences = [nltk.word_tokenize(sentence) for sentence in sentences]
+        separated = []
+        for t in tokenized_sentences:
+            # expected amount of numbers for a text to be considered part of a table.
+            numbers = re.findall(r'\d+', ' '.join(t))
+            if len(numbers) > 5 and len(numbers) < 100:
+                separated.append(' '.join(t))
+        for count, sep in enumerate(separated):
+            logging.debug("Matching %d ...", count)
+            p = re.compile(r'[^¥\s]+.*?¥')
+            matches = p.findall(sep)
+            if len(matches) > 0:
+                print(sep)
+                print(matches)
+        return '\n'.join(separated)
 
-        # I'm not sure if a qpdf failure could leave the file in a halfway
-        # state, so have it write to a temporary file instead of reading from one
-        temp_out = os.path.join(tempdir, 'qpdf_out.pdf')
 
-        # Avoid the shell when possible and integrate with Python errors
-        # (check_call() raises subprocess.CalledProcessError on nonzero exit)
-        check_call(['qpdf', "--password=", '--decrypt', filename, temp_out])
+def named_entity_extraction(txtfile):
+    """Performs NER on the passed txtfile."""
+    with open(txtfile, 'r') as fin:
+        lines = fin.readlines()
+        lines = '\n'.join(lines)
+        logging.debug("Tokenizing")
+        sentences = nltk.sent_tokenize(lines)
+        tokenized_sentences = [nltk.word_tokenize(sentence) for sentence in sentences]
+        logging.debug("POS Tagging")
+        tagged_sentences = [nltk.pos_tag(sentence) for sentence in tokenized_sentences]
+        chunked_sentences = nltk.ne_chunk_sents(tagged_sentences, binary=True)
 
-        # I'm not sure if a qpdf failure could leave the file in a halfway
-        # state, so write to a temporary file and then use os.rename to
-        # overwrite the original atomically.
-        # (We use shutil.move instead of os.rename so it'll fall back to a copy
-        #  operation if the dir= argument to mkdtemp() gets removed)
-        shutil.move(temp_out, filename)
-        logging.warning('File Decrypted (qpdf)')
-    finally:
-        # Delete all temporary files
-        shutil.rmtree(tempdir)
+        def extract_entity_names(t):
+            entity_names = []
+            if hasattr(t, 'label') and t.label:
+                if t.label() == 'NE':
+                    entity_names.append(' '.join([child[0] for child in t]))
+                else:
+                    for child in t:
+                        entity_names.extend(extract_entity_names(child))
+            return entity_names
 
-def parse_gundregelwerk(path):
+        entity_names = []
+        logging.debug("Extracting entity names")
+        for tree in chunked_sentences:
+            entity_names.extend(extract_entity_names(tree))
+
+        return set(entity_names)
+
+
+def parse_gundregelwerk(txtfile):
     """Parses the Grundregelwerk"""
-    logging.info("Parsing Grundregelwerk from %s", path)
-    pdf = PdfFileReader(path)
-    if pdf.isEncrypted:
-        remove_encryption(path)
-        pdf = PdfFileReader(path)
-    for page_number in PAGES['grundregelwerk']:
-        logging.debug("Extracting page %d", page_number)
-        text = pdf.pages[page_number].extractText()
+    logging.info("Parsing Grundregelwerk from %s", txtfile)
+    separate_sentences(txtfile)
+    with open(txtfile, 'r') as fin:
+        pass
+        #lines = fin.readlines()
+        #p = re.compile('*', re.IGNORECASE)
+        #p.match(lines)
 
 MAPPING = {
     'grundregelwerk' : parse_gundregelwerk
 }
 
-PAGES = {
-    'grundregelwerk' : range(418, 424)
+PAGES = {  # remember to substract 1 due to indexing starting at 0 !
+    'grundregelwerk' : range(426, 474)
 }
 
 if __name__ == '__main__':
@@ -68,5 +85,16 @@ if __name__ == '__main__':
         for f in files:
             logging.info("Found %s. Checking whether it's parseable ...", f)
             for s, m in MAPPING.items():
-                if s in f.lower():
-                    m(os.path.join(root, f))
+                if s in f.lower() and not '.txt' in f.lower():
+                    logging.info("It is ! Looking for existing extractions ...")
+                    file_pdf = os.path.join(root, f)
+                    file_extraction = file_pdf+'.txt'
+                    if os.path.exists(file_extraction):
+                        logging.info("Extracted text found !")
+                    else:
+                        logging.info("No extraction found !")
+                        logging.info("Starting extraction ... ( This may take a minute )")
+                        with open(file_extraction, 'w') as fout:
+                            text = textract.process(file_pdf).decode('utf-8')
+                            fout.write(text)
+                    m(file_extraction)

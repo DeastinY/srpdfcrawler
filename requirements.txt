@@ -1,2 +1,4 @@
-pypdf2
 tempdir
+textract
+numpy
+nltk

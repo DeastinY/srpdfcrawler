@@ -1,0 +1,5 @@
+After the nltk has been downloaded open the python interpreter and download the models : averaged_perceptron_tagger, makent_ne_chunker, punkt
+
+>>> import nltk
+>>> nltk.download()
+
