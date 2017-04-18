@@ -28,7 +28,7 @@ def find_tables(sentences):
     OUTPUT : List of matched regex"""
     tables = []
     for count, sep in enumerate(sentences):
-        logging.debug("Searching %d/%d ...", count, len(sentences))
+        #logging.debug("Searching %d/%d ...", count, len(sentences))
         if not 'preis' in sep.lower():
             continue
         pattern = re.compile(r'[^¥\s]+.*?¥')
@@ -72,7 +72,7 @@ def extract_weapons(txtfile, tokenized_sentences, write_temp=True):
 def process(txtfile):
     """Processes a rulebook."""
     logging.info("Processing %s", txtfile)
-    with open(txtfile, 'r') as fin:
+    with open(txtfile, 'r', encoding='utf-8') as fin:
         lines = fin.readlines()
         lines = '\n'.join(lines)
         logging.debug("Tokenizing")
@@ -85,16 +85,17 @@ def process(txtfile):
         #named_entities = named_entity_extraction(chunked_sentences)
 
 
-def extract_text(file_extraction):
+def extract_text(file_extraction, file_pdf):
     logging.info("Extracting text ... ( This may take a minute )")
-    with open(file_extraction, 'w') as fout:
+    with open(file_extraction, 'w', encoding='utf-8') as fout:
         text = textract.process(file_pdf).decode('utf-8')
         fout.write(text)
 
-if __name__ == '__main__':
-    for root, dirs, files in os.walk('pdf'):
+
+def parse(directory):
+    for root, dirs, files in os.walk(directory):
         for f in files:
-            if 'grundregelwerk' in f.lower() and '.pdf' in f.lower() and not '.txt' in f.lower():
+            if '.pdf' in f.lower() and not '.txt' in f.lower():
                 logging.info("Checking whether an extraction for %s exists ...", f)
                 file_pdf = os.path.join(root, f)
                 file_extraction = file_pdf+'.txt'
@@ -102,5 +103,9 @@ if __name__ == '__main__':
                     logging.info("Extraction found !")
                 else:
                     logging.info("No extraction found !")
-                    extract_text(file_extraction)
+                    extract_text(file_extraction, file_pdf)
                 process(file_extraction)
+
+
+if __name__ == '__main__':
+    parse('pdf')
