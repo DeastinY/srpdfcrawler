@@ -1,5 +1,7 @@
 # Project Related
 *.pdf
+*.idea
+*.ini
 
 # Byte-compiled / optimized / DLL files
 __pycache__/
@@ -90,3 +92,4 @@ ENV/
 
 # Rope project settings
 .ropeproject
+.idea/workspace.xml

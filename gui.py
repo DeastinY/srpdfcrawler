@@ -3,7 +3,6 @@ import sys
 import configparser
 from pdf_parser import parse
 from PyQt5.QtGui import QIcon
-from PyQt5.QtCore import pyqtSlot, MouseButtonPress
 from PyQt5.QtWidgets import QApplication, QWidget, QInputDialog, QLineEdit, QFileDialog, QMessageBox, QHBoxLayout, QGroupBox, QDialog, QVBoxLayout, QPushButton, QLineEdit, QLabel
 
 
@@ -19,7 +18,6 @@ class App(QWidget):
         self.config = configparser.ConfigParser()
         self.config_file = 'config.ini'
         self.initUI()
- 
 
     def initUI(self):
         self.setWindowTitle(self.title)
@@ -38,26 +36,24 @@ class App(QWidget):
         self.horizontalGroupBox = QGroupBox("Enter the search query")
         layout = QHBoxLayout()
  
-        lineEdit = QLineEdit(self)
-        layout.addWidget(lineEdit) 
+        self.lineEdit = QLineEdit(self)
+        layout.addWidget(self.lineEdit)
  
-        buttonSearch = QPushButton('Search', self)
-        buttonSearch.clicked.connect(self.mousePressEvent)
-        buttonSearch.installEventFilter(self)
-        layout.addWidget(buttonSearch) 
+        #self.buttonSearch = QPushButton('Search', self)
+        #self.buttonSearch.clicked.connect(self.mousePressEvent)
+        #self.lineEdit.returnPressed.connect(self.buttonSearch.click)
+        self.lineEdit.textChanged.connect(self.search)
+        #layout.addWidget(self.buttonSearch)
  
         self.horizontalGroupBox.setLayout(layout)
         self.contentArea = QLabel(self)
 
-
     def mousePressEvent(self, event):
-        print("clicked", event)
+        if self.sender() == self.buttonSearch:
+            self.search()
 
-
-    def eventFilter(self, source, event):
-        if event.type() == MouseButtonPress:
-            print(source.text())
-        return super(App, self).eventFilter(source, event)
+    def search(self):
+        print(self.lineEdit.text())
 
     def readConfig(self):
         if not os.path.exists(self.config_file):
