@@ -8,8 +8,10 @@ class Searcher:
         self.content = self.read(directory)
 
     def search(self, term):
-        return [(k, v) for k, v in self.content.items() if term.lower() in ' '.join(v).lower()]
-        #return [(k, process.extract(term, v)) for k, v in self.content.items()]
+        if len(term) < 10:
+            return [(k, v) for k, v in self.content.items() if term.lower() in ' '.join(v).lower()]
+        else:
+            return [(k, process.extract(term, v)) for k, v in self.content.items()]
 
     def read(self, directory):
         content = {}
