@@ -3,3 +3,4 @@ FuzzySet
 tempdir
 textract
 nltk
+pyqt5
