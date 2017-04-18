@@ -47,9 +47,6 @@ class App(QWidget):
         self.horizontalGroupBox.setLayout(layout)
         self.contentArea = QLabel(self)
 
-    def mousePressEvent(self, event):
-        if self.sender() == self.buttonSearch:
-            self.search()
 
     def search(self):
         print('Search started')
