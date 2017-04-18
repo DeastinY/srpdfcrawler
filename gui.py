@@ -55,9 +55,9 @@ class App(QWidget):
         print('Search started')
         results = self.searcher.search(self.lineEdit.text())
         text = ["Found {} results\n------------------------\n".format(len(results))]
-        text.extend([s[0]+" : \t"+' '.join(s[1]) for s in results])
-        print(text)
+        #text.extend([s[0]+" : \t"+' '.join(s[1]) for s in results])
         self.contentArea.setText('\n'.join(text))
+        print('Search done')
 
     def readConfig(self):
         if not os.path.exists(self.config_file):

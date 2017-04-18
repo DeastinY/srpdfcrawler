@@ -1,4 +1,5 @@
-fuzzywuzzy[speedup]
+cfuzzyset
+FuzzySet
 tempdir
 textract
 nltk
