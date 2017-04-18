@@ -38,12 +38,8 @@ class App(QWidget):
  
         self.lineEdit = QLineEdit(self)
         layout.addWidget(self.lineEdit)
- 
-        #self.buttonSearch = QPushButton('Search', self)
-        #self.buttonSearch.clicked.connect(self.mousePressEvent)
-        #self.lineEdit.returnPressed.connect(self.buttonSearch.click)
+
         self.lineEdit.textChanged.connect(self.search)
-        #layout.addWidget(self.buttonSearch)
  
         self.horizontalGroupBox.setLayout(layout)
         self.contentArea = QLabel(self)
