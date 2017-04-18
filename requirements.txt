@@ -1,4 +1,4 @@
+fuzzywuzzy[speedup]
 tempdir
 textract
-numpy
 nltk
