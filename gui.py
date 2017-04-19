@@ -52,7 +52,7 @@ class App(QWidget):
         results = self.searcher.search(self.lineEdit.text())
         text = ["Found {} results\n------------------------\n".format(len(results))]
         for tr in results:
-            c = '\n'.join([r["title"]+" : "+r["content"].strip(' \t\n\r') for r in tr[1]])
+            c = '\n'.join(["{} [{}] : {}".format(r["title"], r["page"], r["content"].strip(' \t\n\r')) for r in tr[1]])
             text.append("Word : {}\t Matches : {}\n##########\n{}\n##########".format(tr[0], len(tr[1]), c))
 
         self.contentArea.setText('\n'.join(text))

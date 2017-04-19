@@ -1,6 +1,6 @@
 import os
 from whoosh.index import create_in, open_dir
-from whoosh.fields import Schema, TEXT
+from whoosh.fields import Schema, TEXT, NUMERIC
 from whoosh.qparser import QueryParser
 from whoosh.spelling import ListCorrector
 
@@ -15,6 +15,7 @@ class Searcher:
         self.schema = Schema(
             title=TEXT(stored=True),
             path=TEXT(stored=True),
+            page=NUMERIC(stored=True),
             content=TEXT(stored=True))
         self.ix = None
         self.index_files = False
@@ -54,12 +55,15 @@ class Searcher:
                 if '.pdf' in f.lower() and '.txt' in f.lower():
                     wf = os.path.join(root, f)
                     with open(wf, 'r', encoding='utf-8') as fin:
+                        page = 1
                         print("Building index for {}".format(f))
                         lines = fin.readlines()
                         for l in lines:
                             [self.common_terms.add(i) for i in l.split(' ')]
                             if self.index_files:
-                                self.writer.add_document(title=f, content=l, path=wf)
+                                if '\f' in l:
+                                    page+=1
+                                self.writer.add_document(title=f, content=l, path=wf, page=page)
 
 
 
