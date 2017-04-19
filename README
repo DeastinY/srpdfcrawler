@@ -3,3 +3,4 @@ After the nltk has been downloaded open the python interpreter and download the 
 >>> import nltk
 >>> nltk.download()
 
+Using http://whoosh.readthedocs.io/en/latest/quickstart.html for fuzzy search.
