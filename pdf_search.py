@@ -9,15 +9,18 @@ class Searcher:
     def __init__(self, directory):
         self.pdf_folder = directory
         self.scope = 20
-        self.fuzzySets = {}
+        self.fuzzySet = FuzzySet()
         self.content = self.read(directory)
 
     def search(self, term):
         result = []
-        for key, value in self.fuzzySets.items():
-            result.append((key, value.get(term)))
-        print(len(result))
-        top_ten = sorted(result, key=lambda v: v[1][0], reverse=True)[10]
+        matches = self.fuzzySet.get(term)
+        matches.extend([(1, term)])
+        for t in sorted(matches, key=lambda v: v[0], reverse=True):
+            for key, value in self.content.items():
+                if t.lower() in value.lower():
+                    result.append((key, value))
+        top_ten = sorted(result, reverse=True)[10]
         print(top_ten)
         return top_ten
 
@@ -34,11 +37,12 @@ class Searcher:
                         lines = ' '.join(lines)
                         lines = lines.split(' ')
                         print("Building fuzzy dict for {}".format(f))
-                        self.fuzzySets[f] = FuzzySet()
+                        for l in lines:
+                            self.fuzzySet.add(l)
+                        content[f] = []
                         for i in range(len(lines) // self.scope + 1):
                             word_group = ' '.join(lines[i:i + self.scope])
-                            print(word_group)
-                            self.fuzzySets[f].add(word_group)
+                            content[f].append(word_group)
         return content
 
 
