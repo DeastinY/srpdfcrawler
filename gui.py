@@ -47,12 +47,14 @@ class App(QWidget):
         self.horizontalGroupBox.setLayout(layout)
         self.contentArea = QLabel(self)
 
-
     def search(self):
         print('Search started')
         results = self.searcher.search(self.lineEdit.text())
         text = ["Found {} results\n------------------------\n".format(len(results))]
-        #text.extend([s[0]+" : \t"+' '.join(s[1]) for s in results])
+        for tr in results:
+            c = '\n'.join([r["title"]+" : "+r["content"].strip(' \t\n\r') for r in tr[1]])
+            text.append("Word : {}\t Matches : {}\n##########\n{}\n##########".format(tr[0], len(tr[1]), c))
+
         self.contentArea.setText('\n'.join(text))
         print('Search done')
 

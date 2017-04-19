@@ -1,5 +1,4 @@
-cfuzzyset
-FuzzySet
+whoosh
 tempdir
 textract
 nltk
