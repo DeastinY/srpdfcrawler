@@ -1,6 +1,8 @@
 import os
 import sys
 import configparser
+from GroupWidget import GroupWidget
+from ResultWidget import ResultWidget
 from pdf_search import Searcher
 from pdf_parser import parse
 from PyQt5.QtCore import Qt
@@ -47,17 +49,22 @@ class App(QWidget):
         self.line_edit.editingFinished.connect(self.search)
  
         self.horizontal_groupbox .setLayout(layout)
-        self.content_area = QLabel(self)
+        self.content_area = ResultWidget(self)
 
     def search(self):
         results = self.searcher.search(self.line_edit.text())
-        text = ["Found {} results\n------------------------\n".format(len(results))]
+        text = []
         for term, result in results:
             content = []
+            count = 0
             for t, p, c in [(r["title"], r["page"], r["content"].strip(' \t\n\r')) for r in result]:
                 content.append("{} [{}] : {}".format(t, p, c))
-            text.append("Word : {}\t Matches : {}\n#######\n{}\n#######".format(term, len(result), '\n'.join(content)))
-        self.content_area.setText('\n'.join(text))
+                count += 1
+            text.append((term, content, count))
+        self.content_area.clear()
+        for t in text:
+            title = "{} Matches : {}".format(t[2], t[0])
+            self.content_area.add(GroupWidget(title=title))
 
     def read_config(self):
         if not os.path.exists(self.config_file):
