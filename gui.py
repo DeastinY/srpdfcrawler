@@ -6,7 +6,8 @@ from ResultWidget import ResultWidget
 from pdf_search import Searcher
 from pdf_parser import parse
 from PyQt5.QtCore import Qt
-from PyQt5.QtWidgets import QApplication, QWidget, QFileDialog, QMessageBox, QHBoxLayout, QGroupBox, QVBoxLayout, QLineEdit, QLabel
+from PyQt5.QtWidgets import QApplication, QWidget, QFileDialog, QMessageBox, \
+    QHBoxLayout, QGroupBox, QVBoxLayout, QLineEdit, QLabel, QScrollArea
 
 
 class App(QWidget):
@@ -32,7 +33,7 @@ class App(QWidget):
         self.setGeometry(self.left, self.top, self.width, self.height)
         self.create_layout()
         window_layout = QVBoxLayout()
-        window_layout.addWidget(self.horizontal_groupbox, 1)
+        window_layout.addWidget(self.horizontal_groupbox)
         window_layout.addWidget(self.content_area, 100)
         window_layout.setAlignment(self.content_area, Qt.AlignTop)
         self.setLayout(window_layout)
@@ -52,19 +53,24 @@ class App(QWidget):
         self.content_area = ResultWidget(self)
 
     def search(self):
-        results = self.searcher.search(self.line_edit.text())
-        text = []
-        for term, result in results:
-            content = []
+        results = []  # [ (term, [title, page, content], count ]
+        for term, matches in self.searcher.search(self.line_edit.text()):
+            hits = []
             count = 0
-            for t, p, c in [(r["title"], r["page"], r["content"].strip(' \t\n\r')) for r in result]:
-                content.append("{} [{}] : {}".format(t, p, c))
+            search = [(match["title"], match["page"], match["content"].strip(' \t\n\r')) for match in matches]
+            for title, page, content in search:
+                hits.append((title, page, content))
                 count += 1
-            text.append((term, content, count))
+            results.append((term, hits, count))
         self.content_area.clear()
-        for t in text:
-            title = "{} Matches : {}".format(t[2], t[0])
-            self.content_area.add(GroupWidget(title=title))
+        for term, hits, count in results:
+            group_widget = GroupWidget(title="{} Matches : {}".format(count, term))
+            content_layout = QVBoxLayout(group_widget)
+            for title, page, content in hits:
+                text = "############# {} [Page: {}]\n{}".format(title, page, content)
+                content_layout.addWidget(QLabel(text))
+            group_widget.set_content_layout(content_layout)
+            self.content_area.add(group_widget)
 
     def read_config(self):
         if not os.path.exists(self.config_file):

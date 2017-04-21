@@ -43,7 +43,7 @@ class Searcher:
         suggestions = [term]+(self.corrector.suggest(term, limit=5))
         for t in suggestions:
             query = self.parser.parse(t)
-            results.append((t, self.searcher.search(query)))
+            results.append((t, self.searcher.search(query, limit=100)))
         return results
 
     def search_fuzzy(self, term):

@@ -11,7 +11,7 @@ class GroupWidget(QWidget):
         """
         super(GroupWidget, self).__init__(parent=parent)
 
-        self.animation_duration = 300
+        self.animation_duration = animation_duration
         self.toggle_animation = QParallelAnimationGroup()
         self.content_area = QScrollArea()
         self.header_line = QFrame()
@@ -38,9 +38,9 @@ class GroupWidget(QWidget):
         self.content_area.setMinimumHeight(0)
         # let the entire widget grow and shrink with its content
         toggle_animation = self.toggle_animation
-        #toggle_animation.addAnimation(QPropertyAnimation(self, "minimumHeight"))
-        #toggle_animation.addAnimation(QPropertyAnimation(self, "maximumHeight"))
-        #toggle_animation.addAnimation(QPropertyAnimation(self.contentArea, "maximumHeight"))
+        toggle_animation.addAnimation(QPropertyAnimation(self, bytes("minimumHeight", "utf-8")))
+        toggle_animation.addAnimation(QPropertyAnimation(self, bytes("maximumHeight", "utf-8")))
+        toggle_animation.addAnimation(QPropertyAnimation(self.content_area, bytes("maximumHeight", "utf-8")))
         # don't waste space
         main_layout = self.main_layout
         main_layout.setVerticalSpacing(0)
@@ -56,10 +56,10 @@ class GroupWidget(QWidget):
             arrow_type = Qt.DownArrow if checked else Qt.RightArrow
             direction = QAbstractAnimation.Forward if checked else QAbstractAnimation.Backward
             toggle_button.setArrowType(arrow_type)
-            self.toggleAnimation.setDirection(direction)
-            self.toggleAnimation.start()
+            self.toggle_animation.setDirection(direction)
+            self.toggle_animation.start()
 
-        #self.toggle_button.clicked.connect(start_animation)
+        self.toggle_button.clicked.connect(start_animation)
 
     def set_content_layout(self, content_layout):
         # Not sure if this is equivalent to self.contentArea.destroy()
@@ -67,7 +67,7 @@ class GroupWidget(QWidget):
         self.content_area.setLayout(content_layout)
         collapsed_height = self.sizeHint().height() - self.content_area.maximumHeight()
         content_height = content_layout.sizeHint().height()
-        for i in range(self.toggleAnimation.animationCount()-1):
+        for i in range(self.toggle_animation.animationCount()-1):
             spoiler_animation = self.toggle_animation.animationAt(i)
             spoiler_animation.setDuration(self.animation_duration)
             spoiler_animation.setStartValue(collapsed_height)
