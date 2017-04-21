@@ -5,14 +5,14 @@ This handy tool is used to quickly crawl through all the Shadowrun rulebooks you
 At the initial startup an search index is built. This can take quite some time, especially on older systems. Afterwards the search is very fast.
 You are not allowed to share the index that was created as this is technically a copyright infringement. I am not a lawyer, but building the index on your Desktop and moving it to your Tablet might be another story :)
 
-![Screenshot of the first Release][screen.png]
+![Screenshot of the first Release](screen.png)
 
 ### Running
 First install al the dependencies defined in requirements.txt using pip. Its tested for Python 3.6.1
 After the nltk has been downloaded open the python interpreter and download the models : averaged_perceptron_tagger, makent_ne_chunker, punkt
 
->>> import nltk
->>> nltk.download()
+> import nltk
+> nltk.download()
 
 Using http://whoosh.readthedocs.io/en/latest/quickstart.html for fuzzy search.
 
