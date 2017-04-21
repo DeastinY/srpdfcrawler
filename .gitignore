@@ -3,6 +3,7 @@
 *.idea
 *.ini
 index
+nltk_data
 
 # Byte-compiled / optimized / DLL files
 __pycache__/
@@ -94,3 +95,4 @@ ENV/
 # Rope project settings
 .ropeproject
 
+nltk_data/tokenizers/punkt/turkish.pickle

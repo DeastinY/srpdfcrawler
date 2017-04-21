@@ -4,12 +4,12 @@ import io
 import os
 import json
 import nltk
-import shutil
 import logging
 import textract
-from tempdir import tempfile
 
 logging.basicConfig(level=logging.DEBUG)
+nltk.data.path.append('.'+os.sep+'nltk_data')
+
 
 def separate_sentences(tokenized_sentences):
     """Generates a list where every line is a sentence."""
@@ -95,7 +95,7 @@ def extract_text(file_extraction, file_pdf):
 def parse(directory):
     for root, dirs, files in os.walk(directory):
         for f in files:
-            if '.pdf' in f.lower() and not '.txt' in f.lower():
+            if '.pdf' in f.lower() and '.txt' not in f.lower():
                 logging.info("Checking whether an extraction for %s exists ...", f)
                 file_pdf = os.path.join(root, f)
                 file_extraction = file_pdf+'.txt'

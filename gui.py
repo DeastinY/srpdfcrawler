@@ -106,6 +106,11 @@ class App(QWidget):
 
  
 if __name__ == '__main__':
+    print("Loading language processing toolkit ...")
+    import nltk
+    for dl in ["averaged_perceptron_tagger", "maxent_ne_chunker", "punkt"]:
+        nltk.download(dl, download_dir='nltk_data')
+    print("Done")
     app = QApplication(sys.argv)
     ex = App()
     sys.exit(app.exec_())
