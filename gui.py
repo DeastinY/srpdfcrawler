@@ -18,62 +18,64 @@ class App(QWidget):
         self.height = 480
         self.config = configparser.ConfigParser()
         self.config_file = 'config.ini'
-        self.readConfig()
+        self.read_config()
         self.searcher = Searcher(self.config['GENERAL']['RulebookLocation'])
-        self.initUI()
+        self.horizontal_groupbox = None
+        self.content_area = None
+        self.line_edit = None
+        self.init_ui()
 
-    def initUI(self):
+    def init_ui(self):
         self.setWindowTitle(self.title)
         self.setGeometry(self.left, self.top, self.width, self.height)
-        self.createLayout()
-        windowLayout = QVBoxLayout()
-        windowLayout.addWidget(self.horizontalGroupBox, 1)
-        windowLayout.addWidget(self.contentArea, 100)
-        windowLayout.setAlignment(self.contentArea, Qt.AlignTop)
-        self.setLayout(windowLayout)
+        self.create_layout()
+        window_layout = QVBoxLayout()
+        window_layout.addWidget(self.horizontal_groupbox, 1)
+        window_layout.addWidget(self.content_area, 100)
+        window_layout.setAlignment(self.content_area, Qt.AlignTop)
+        self.setLayout(window_layout)
 
         self.show()
 
-    
-    def createLayout(self):
-        self.horizontalGroupBox = QGroupBox("Enter the search query")
+    def create_layout(self):
+        self.horizontal_groupbox = QGroupBox("Enter the search query")
         layout = QHBoxLayout()
  
-        self.lineEdit = QLineEdit(self)
-        layout.addWidget(self.lineEdit)
+        self.line_edit = QLineEdit(self)
+        layout.addWidget(self.line_edit)
 
-        self.lineEdit.editingFinished.connect(self.search)
+        self.line_edit.editingFinished.connect(self.search)
  
-        self.horizontalGroupBox.setLayout(layout)
-        self.contentArea = QLabel(self)
+        self.horizontal_groupbox .setLayout(layout)
+        self.content_area = QLabel(self)
 
     def search(self):
-        print('Search started')
-        results = self.searcher.search(self.lineEdit.text())
+        results = self.searcher.search(self.line_edit.text())
         text = ["Found {} results\n------------------------\n".format(len(results))]
-        for tr in results:
-            c = '\n'.join(["{} [{}] : {}".format(r["title"], r["page"], r["content"].strip(' \t\n\r')) for r in tr[1]])
-            text.append("Word : {}\t Matches : {}\n##########\n{}\n##########".format(tr[0], len(tr[1]), c))
+        for term, result in results:
+            content = []
+            for t, p, c in [(r["title"], r["page"], r["content"].strip(' \t\n\r')) for r in result]:
+                content.append("{} [{}] : {}".format(t, p, c))
+            text.append("Word : {}\t Matches : {}\n#######\n{}\n#######".format(term, len(result), '\n'.join(content)))
+        self.content_area.setText('\n'.join(text))
 
-        self.contentArea.setText('\n'.join(text))
-        print('Search done')
-
-    def readConfig(self):
+    def read_config(self):
         if not os.path.exists(self.config_file):
             self.config['GENERAL'] = {}
-            self.config['GENERAL']['RulebookLocation'] = self.openPdfDialog()
+            self.config['GENERAL']['RulebookLocation'] = self.open_pdfdialog()
             with open(self.config_file, 'w') as confout:
                 self.config.write(confout)
         self.config.read(self.config_file)
 
-    def openPdfDialog(self):    
-        QMessageBox.question(self, "Process rulebooks", "Not set up yet. Select directory containing PDF files to process. This may take up to 5 minutes", QMessageBox.Ok)
+    def open_pdfdialog(self):
+        message = "Not set up yet. Select directory containing PDF files to process. This may take up to 5 minutes"
+        QMessageBox.question(self, "Process rulebooks", message, QMessageBox.Ok)
         options = QFileDialog.Options()
         options |= QFileDialog.DontUseNativeDialog
-        directoryName = QFileDialog.getExistingDirectory(self, options=options)
-        if directoryName:
-            parse(directoryName)
-            return directoryName
+        directory_name = QFileDialog.getExistingDirectory(self, options=options)
+        if directory_name:
+            parse(directory_name)
+            return directory_name
 
  
 if __name__ == '__main__':
