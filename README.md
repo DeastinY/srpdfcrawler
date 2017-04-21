@@ -3,7 +3,8 @@
 This handy tool is used to quickly crawl through all the Shadowrun rulebooks you gathered over the years and give you that single pesky rule you just can't find.
 
 At the initial startup an search index is built. This can take quite some time, especially on older systems. Afterwards the search is very fast.
-You are not allowed to share the index that was created as this is technically a copyright infringement. I am not a lawyer, but building the index on your Desktop and moving it to your Tablet might be another story :)
+
+Textextraction can only be done on Linux. Follow this guide https://github.com/deanmalmgren/textract/blob/master/docs/installation.rst to set up textract and build your .txt files. Move those to Windows.
 
 ![Screenshot of the first Release](screen.png)
 
