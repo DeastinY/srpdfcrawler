@@ -25,6 +25,8 @@ class App(QWidget):
         self.searcher = Searcher(self.config['GENERAL']['RulebookLocation'])
         self.horizontal_groupbox = None
         self.content_area = None
+        self.scroll_area = None
+        self.utility_label = None
         self.line_edit = None
         self.init_ui()
 
@@ -33,9 +35,9 @@ class App(QWidget):
         self.setGeometry(self.left, self.top, self.width, self.height)
         self.create_layout()
         window_layout = QVBoxLayout()
-        window_layout.addWidget(self.horizontal_groupbox)
-        window_layout.addWidget(self.content_area, 100)
-        window_layout.setAlignment(self.content_area, Qt.AlignTop)
+        window_layout.addWidget(self.horizontal_groupbox, 1)
+        window_layout.addWidget(self.scroll_area, 100)
+        window_layout.setAlignment(self.scroll_area, Qt.AlignTop)
         self.setLayout(window_layout)
 
         self.show()
@@ -49,8 +51,17 @@ class App(QWidget):
 
         self.line_edit.editingFinished.connect(self.search)
  
-        self.horizontal_groupbox .setLayout(layout)
-        self.content_area = ResultWidget(self)
+        self.horizontal_groupbox.setLayout(layout)
+
+        self.scroll_area = QScrollArea()
+        self.scroll_area.setWidgetResizable(True)
+        self.scroll_area.setVerticalScrollBarPolicy(Qt.ScrollBarAlwaysOn)
+        self.scroll_area.setHorizontalScrollBarPolicy(Qt.ScrollBarAlwaysOff)
+        self.scroll_area.setMinimumSize(600, 400)  # TODO: Replace by proper scaling
+
+        self.content_area = ResultWidget(self.scroll_area)
+
+        self.scroll_area.setWidget(self.content_area)
 
     def search(self):
         results = []  # [ (term, [title, page, content], count ]
@@ -62,6 +73,9 @@ class App(QWidget):
                 hits.append((title, page, content))
                 count += 1
             results.append((term, hits, count))
+        self.update_results(results)
+
+    def update_results(self, results):
         self.content_area.clear()
         for term, hits, count in results:
             group_widget = GroupWidget(title="{} Matches : {}".format(count, term))
