@@ -8,6 +8,8 @@ Textextraction can only be done on Linux. Follow this guide https://github.com/d
 
 ![Screenshot of the first Release](screen.png)
 
+***Currently the text extraction from the pdfs does not work with the built files. You need to run the source to extract the pdfs to text, then you can use the one-file solutions.***
+
 ### Running
 First install al the dependencies defined in requirements.txt using pip. Its tested for Python 3.6.1
 After the nltk has been downloaded open the python interpreter and download the models : averaged_perceptron_tagger, makent_ne_chunker, punkt
