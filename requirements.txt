@@ -1,5 +1,5 @@
 whoosh
-tempdir
 textract
 nltk
 pyqt5
+numpy

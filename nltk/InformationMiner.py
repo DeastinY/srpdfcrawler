@@ -5,7 +5,7 @@ import numpy
 import pickle
 import logging
 import textract
-import pos_tagger
+import POSTagger
 import time
 
 logging.basicConfig(level=logging.DEBUG)
@@ -54,7 +54,7 @@ class InformationMiner():
                          "Creating new POS tags. This can take some time ...",
                          self.tokens,
                          '02_pos_',
-                         lambda d: pos_tagger.tag(d),
+                         lambda d: POSTagger.tag(d),
                          False)
 
     def extract_entity_names(self):
@@ -68,13 +68,14 @@ class InformationMiner():
     def extract_recurse(self, tree):
         entity_names = []
         if hasattr(tree, 'label') and tree.label():
+            if tree.label() != 'S':
+                entity_names.append(' '.join([t[0] for t in tree]))
             for child in tree:
                 entity_names.extend(self.extract_recurse(child))
         else:
             if 'NE' in tree[1]:
                 entity_names.append(tree[0])
-
-        return entity_names
+        return list(set(entity_names))
 
     #######################################Util Functions Down Here #######################################
 
@@ -131,5 +132,5 @@ if __name__ == '__main__':
         return text
 
 
-    #Annotator("\n".join(get_text()))
-    Annotator("Peter ist ein großer Junge. Er kauft bei dem großen Supermarkt Tedi schon ganz alleine eine Frisbee.", outfile='short_test', force_create=True)
+    InformationMiner("\n".join(get_text()))
+    #InformationMiner("Peter ist ein großer Junge. Er kauft bei dem großen Supermarkt Tedi schon ganz alleine eine Frisbee.", outfile='short_test', force_create=True)
