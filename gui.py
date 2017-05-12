@@ -24,6 +24,8 @@ class App(QWidget):
         self.read_config()
         self.searcher = Searcher(self.config['GENERAL']['RulebookLocation'])
         self.horizontal_groupbox = None
+        self.horizontal_recommendations = None
+        self.recommendations = None
         self.content_area = None
         self.scroll_area = None
         self.utility_label = None
@@ -44,13 +46,12 @@ class App(QWidget):
 
     def create_layout(self):
         self.horizontal_groupbox = QGroupBox("Enter the search query")
-        layout = QHBoxLayout()
- 
+        layout = QVBoxLayout()
         self.line_edit = QLineEdit(self)
         layout.addWidget(self.line_edit)
-
         self.line_edit.editingFinished.connect(self.search)
- 
+        self.recommendations = QLabel("Other recommendations: [Currently in development]")
+        layout.addWidget(self.recommendations)
         self.horizontal_groupbox.setLayout(layout)
 
         self.scroll_area = QScrollArea()
@@ -63,26 +64,35 @@ class App(QWidget):
 
         self.scroll_area.setWidget(self.content_area)
 
+
     def search(self):
         results = []  # [ (term, [title, page, content], count ]
-        for term, matches in self.searcher.search(self.line_edit.text()):
-            hits = []
-            count = 0
-            search = [(match["title"], match["page"], match["content"].strip(' \t\n\r')) for match in matches]
-            for title, page, content in search:
-                hits.append((title, page, content))
-                count += 1
-            results.append((term, hits, count))
-        self.update_results(results)
+        extended_matches = self.searcher.search(self.line_edit.text())
+        if len(extended_matches) == 0:
+            return
+        terms = [m[0] for m in extended_matches]
+        self.recommendations.setText(" ".join(terms[1:]))
+        term, matches = extended_matches[0]
+        hits = []
+        search = [(match["title"], match["page"], match.highlights("content")) for match in matches]
+        for title, page, content in search:
+            hits.append((title, page, content))
+        self.update_results(hits)
 
-    def update_results(self, results):
+    def update_results(self, hits):
         self.content_area.clear()
-        for term, hits, count in results:
-            group_widget = GroupWidget(title="{} Matches : {}".format(count, term))
+        books = {}
+        for title, page, content in hits:
+            if not title in books:
+                books[title] = []
+            books[title].append((page, content))
+        for b in books.keys():
+            group_widget = GroupWidget(title="{}\t{} Matches".format(b, len(books[b])))
             content_layout = QVBoxLayout(group_widget)
-            for title, page, content in hits:
-                text = "############# {} [Page: {}]\n{}".format(title, page, content)
-                content_layout.addWidget(QLabel(text))
+            for t in sorted(books[b]):
+                label = QLabel("Page: {}\n{} ".format(*t))
+                label.setWordWrap(True)
+                content_layout.addWidget(label)
             group_widget.set_content_layout(content_layout)
             self.content_area.add(group_widget)
 

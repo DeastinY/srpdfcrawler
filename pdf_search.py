@@ -3,6 +3,7 @@ from whoosh.index import create_in, open_dir
 from whoosh.fields import Schema, TEXT, NUMERIC
 from whoosh.qparser import QueryParser
 from whoosh.spelling import ListCorrector
+from whoosh.highlight import UppercaseFormatter
 
 
 class Searcher:
@@ -43,11 +44,12 @@ class Searcher:
         suggestions = [term]+(self.corrector.suggest(term, limit=5))
         for t in suggestions:
             query = self.parser.parse(t)
-            results.append((t, self.searcher.search(query, limit=100)))
+            query_res = self.searcher.search(query, limit=100)
+            query_res.fragmenter.maxchars = 3000
+            query_res.fragmenter.surround = 1000
+            query_res.formatter = UppercaseFormatter()
+            results.append((t, query_res))
         return results
-
-    def search_fuzzy(self, term):
-        pass
 
     def read(self):
         for root, dirs, files in os.walk(self.pdf_folder):

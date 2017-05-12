@@ -38,27 +38,6 @@ def find_tables(sentences):
     return tables
 
 
-def named_entity_extraction(chunked_sentences):
-    """Performs NER on the passed txtfile."""
-    def extract_entity_names(tree):
-        """Extractes the NE tags from the tree."""
-        entity_names = []
-        if hasattr(tree, 'label') and tree.label:
-            if tree.label() == 'NE':
-                entity_names.append(' '.join([child[0] for child in tree]))
-            else:
-                for child in tree:
-                    entity_names.extend(extract_entity_names(child))
-        return entity_names
-
-    entity_names = []
-    logging.debug("Extracting entity names")
-    for tree in chunked_sentences:
-        entity_names.extend(extract_entity_names(tree))
-
-    return set(entity_names)
-
-
 def extract_weapons(txtfile, tokenized_sentences, write_temp=True):
     """Tries to extract weapon stats from tables."""
     logging.info("Extracting weapons")
@@ -79,10 +58,6 @@ def process(txtfile):
         sentences = nltk.sent_tokenize(lines)
         tokenized_sentences = [nltk.word_tokenize(sentence) for sentence in sentences]
         extract_weapons(txtfile, tokenized_sentences)
-        #logging.debug("POS Tagging")
-        #tagged_sentences = [nltk.pos_tag(sentence) for sentence in tokenized_sentences]
-        #chunked_sentences = nltk.ne_chunk_sents(tagged_sentences, binary=True)
-        #named_entities = named_entity_extraction(chunked_sentences)
 
 
 def extract_text(file_extraction, file_pdf):
