@@ -18,7 +18,7 @@ class App(QWidget):
         self.left = 100
         self.top = 100
         self.width = 640
-        self.height = 480
+        self.height = 640
         self.config = configparser.ConfigParser()
         self.config_file = 'config.ini'
         self.read_config()
@@ -90,11 +90,14 @@ class App(QWidget):
             group_widget = GroupWidget(title="{}\t{} Matches".format(b, len(books[b])))
             content_layout = QVBoxLayout(group_widget)
             for t in sorted(books[b]):
+                if len(t[1]) < 20:
+                    continue
                 label = QLabel("Page: {}\n{} ".format(*t))
                 label.setWordWrap(True)
                 content_layout.addWidget(label)
-            group_widget.set_content_layout(content_layout)
-            self.content_area.add(group_widget)
+            if content_layout.count() > 0:
+                group_widget.set_content_layout(content_layout)
+                self.content_area.add(group_widget)
 
     def read_config(self):
         if not os.path.exists(self.config_file):
