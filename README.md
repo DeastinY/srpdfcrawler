@@ -10,6 +10,7 @@ At the initial startup an search index is built. This can take quite some time, 
 - Check this for Windows textract : https://github.com/deanmalmgren/textract/issues/111
   - Download the linked zip and extract `pdftotext.exe` to the programs root
   - Add the file to the pyinstaller spec like this : `datas=[('pdftotext.exe', '.')],`
+- Add an hidden import for textract: `hiddenimports=["textract.parsers.pdf_parser"],`
 - `pip install https://github.com/pyinstaller/pyinstaller/archive/develop.zip` (PyInstaller currently does not support Python 3.6 on stable.)
 - Read through https://github.com/pyinstaller/pyinstaller/issues/1566 and make sure you have done the following if on Windows:
 
@@ -25,7 +26,7 @@ At the initial startup an search index is built. This can take quite some time, 
 
     After you add the required paths, pyinstaller can find the files.
    
--  Build using pyinstaller -F gui.py
+-  Build using `pyinstaller gui_onefile.spec` or `pyinstaller gui_onedir.spec` after adjusting paths in them.
 
 ##### Common issues
 - Recursion issues : Add the following to `gui.spec`
@@ -35,3 +36,5 @@ At the initial startup an search index is built. This can take quite some time, 
       
 - `Failed to execute pyi_rth_qt5plugins` 
   - Add your `PyQt5`-Path to pathex in the spec file e.g. `C:\Users\ricc\AppData\Local\Programs\Python\Python36\Lib\site-packages`
+  
+- Problems with textract : See https://github.com/deanmalmgren/textract/issues/156
