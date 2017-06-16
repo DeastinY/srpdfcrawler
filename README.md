@@ -10,7 +10,8 @@ At the initial startup an search index is built. This can take quite some time, 
 
 ##### Information
 - Check this for Windows textract : https://github.com/deanmalmgren/textract/issues/111
-  - Download the linked zip and extract `pdftotext.exe` to the programs root 
+  - Download the linked zip and extract `pdftotext.exe` to the programs root
+  - Add the file to the pyinstaller spec like this : `datas=[('pdftotext.exe', '.')],`
 - `pip install https://github.com/pyinstaller/pyinstaller/archive/develop.zip` (PyInstaller currently does not support Python 3.6 on stable.)
 - Read through https://github.com/pyinstaller/pyinstaller/issues/1566 and make sure you have done the following if on Windows:
 
