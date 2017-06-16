@@ -4,29 +4,19 @@ This handy tool is used to quickly crawl through all the Shadowrun rulebooks you
 
 At the initial startup an search index is built. This can take quite some time, especially on older systems. Afterwards the search is very fast.
 
-Textextraction can only be done on Linux. Follow this guide https://github.com/deanmalmgren/textract/blob/master/docs/installation.rst to set up textract and build your .txt files. Move those to Windows.
-
 ![Screenshot of the first Release](screen.png)
 
-***Currently the text extraction from the pdfs does not work with the built files. You need to run the source to extract the pdfs to text, then you can use the one-file solutions.***
-
-### Running
-First install al the dependencies defined in requirements.txt using pip. Its tested for Python 3.6.1
-After the nltk has been downloaded open the python interpreter and download the models : averaged_perceptron_tagger, makent_ne_chunker, punkt
-
-> import nltk
-> nltk.download()
-
-Using http://whoosh.readthedocs.io/en/latest/quickstart.html for fuzzy search.
-
 ### Building
+- Check this for Windows textract : https://github.com/deanmalmgren/textract/issues/111
+  - Download the linked zip and extract `pdftotext.exe` to the programs root
+  - Add the file to the pyinstaller spec like this : `datas=[('pdftotext.exe', '.')],`
+- Add an hidden import for textract: `hiddenimports=["textract.parsers.pdf_parser"],`
+- `pip install https://github.com/pyinstaller/pyinstaller/archive/develop.zip` (PyInstaller currently does not support Python 3.6 on stable.)
+- Read through https://github.com/pyinstaller/pyinstaller/issues/1566 and make sure you have done the following if on Windows:
 
-To build the project with pyinstaller make sure to use the dev branch. PyInstaller currently does not support Python 3.6 on stable.
-Furthermore read through https://github.com/pyinstaller/pyinstaller/issues/1566 and make sure you have done the following if on Windows:
+        The following solved the problem for me (on Win10 v1607 - PyQt5 App):
 
-    The following solved the problem for me (on Win10 v1607 - PyQt5 App):
-
-    Add the directory of the required dlls to system Path. My application uses PyQt5 which is dependent on api-ms-win dlls.
+        Add the directory of the required dlls to system Path. My application uses PyQt5 which is dependent on api-ms-win dlls.
 
         For PyQt5 add this directory: %WHERE EVER YOU INSTALLED PYTHON%\Lib\site-packages\PyQt5\Qt\bin
 
@@ -36,4 +26,15 @@ Furthermore read through https://github.com/pyinstaller/pyinstaller/issues/1566 
 
     After you add the required paths, pyinstaller can find the files.
    
-Build using pyinstaller -F gui.py
+-  Build using `pyinstaller gui_onefile.spec` or `pyinstaller gui_onedir.spec` after adjusting paths in them.
+
+##### Common issues
+- Recursion issues : Add the following to `gui.spec`
+
+      import sys
+      sys.setrecursionlimit(10000)
+      
+- `Failed to execute pyi_rth_qt5plugins` 
+  - Add your `PyQt5`-Path to pathex in the spec file e.g. `C:\Users\ricc\AppData\Local\Programs\Python\Python36\Lib\site-packages`
+  
+- Problems with textract : See https://github.com/deanmalmgren/textract/issues/156
