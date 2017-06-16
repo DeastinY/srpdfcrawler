@@ -6,12 +6,11 @@
 #
 argcomplete==1.8.2        # via textract
 beautifulsoup4==4.6.0     # via textract
-chardet==3.0.3            # via textract
+chardet==3.0.4            # via textract
 docx2txt==0.6             # via textract
 ebooklib==0.16            # via textract
-lxml==3.7.3               # via ebooklib, python-pptx
+lxml==3.8.0               # via ebooklib, python-pptx
 nltk==3.2.4
-numpy==1.12.1
 olefile==0.44             # via pillow
 pillow==4.1.1             # via python-pptx
 pyqt5==5.8.2
@@ -20,6 +19,7 @@ sip==4.19.2               # via pyqt5
 six==1.10.0               # via ebooklib, nltk, textract
 speechrecognition==3.6.5  # via textract
 textract==1.5.0
+tqdm==4.14.0
 whoosh==2.7.4
 xlrd==1.0.0               # via textract
 xlsxwriter==0.9.6         # via python-pptx

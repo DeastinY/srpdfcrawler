@@ -1,5 +1,5 @@
-whoosh
-textract
-nltk
-pyqt5
-numpy
+PyQt5==5.8.2
+nltk==3.2.4
+textract==1.5.0
+tqdm==4.14.0
+whoosh==2.7.4
