@@ -25,7 +25,7 @@ def load_db(path_rulebooks):
 
 
 def extract_text(file_extraction, file_pdf):
-    logging.info("Extracting text ... ( This may take a minute or two.)")
+    logging.info(f"Extracting text from {file_pdf} ... ( This may take a minute or two.)")
     with file_extraction.open("w", encoding="utf-8") as fout:
         fout.write(textract.process(str(file_pdf)).decode('utf-8'))
     logging.info(f"Saved extraction to {file_extraction}")
