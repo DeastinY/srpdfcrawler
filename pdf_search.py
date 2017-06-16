@@ -1,14 +1,22 @@
 import os
+import sqlite3
+import logging
+from tqdm import tqdm
+from pathlib import Path
 from whoosh.index import create_in, open_dir
 from whoosh.fields import Schema, TEXT, NUMERIC
 from whoosh.qparser import QueryParser
 from whoosh.spelling import ListCorrector
 from whoosh.highlight import UppercaseFormatter
 
+logging.basicConfig(level=logging.INFO)
+PATH = os.path.dirname(os.path.realpath(__file__))
+PATH_DATA = Path(PATH) / 'data'
+FILE_DB = PATH_DATA / "data.db"
+
 
 class Searcher:
-    def __init__(self, directory):
-        self.pdf_folder = directory
+    def __init__(self):
         self.scope = 20
         self.terms = set()
         self.index_path = "index"
@@ -45,27 +53,26 @@ class Searcher:
         for t in suggestions:
             query = self.parser.parse(t)
             query_res = self.searcher.search(query, limit=100)
-            query_res.fragmenter.maxchars = 3000
-            query_res.fragmenter.surround = 1000
+            query_res.fragmenter.maxchars = 300
+            query_res.fragmenter.surround = 100
             query_res.formatter = UppercaseFormatter()
             results.append((t, query_res))
         return results
 
     def read(self):
-        for root, dirs, files in os.walk(self.pdf_folder):
-            for f in files:
-                if '.pdf' in f.lower() and '.txt' in f.lower():
-                    wf = os.path.join(root, f)
-                    with open(wf, 'r', encoding='utf-8') as fin:
-                        page = 1
-                        print("Building index for {}".format(f))
-                        lines = fin.readlines()
-                        for l in lines:
-                            [self.common_terms.add(i) for i in l.split(' ')]
-                            if self.index_files:
-                                if '\f' in l:
-                                    page+=1
-                                self.writer.add_document(title=f, content=l, path=wf, page=page)
+        logging.info("Indexing")
+        con = sqlite3.connect(str(FILE_DB))
+        cur = con.cursor()
+        cur.execute(r"SELECT BOOKS.NAME, PAGE, CONTENT "
+                    r"FROM TEXT, BOOKS "
+                    r"WHERE BOOK = BOOKS.ID "
+                    r"ORDER BY BOOKS.NAME, PAGE")
+        for row in tqdm(cur):
+            book, page, content = row
+            for i in content.split(' '):
+                self.common_terms.add(i)
+            if self.index_files:
+                self.writer.add_document(title=book, content=content, path=book, page=page)
 
 
 

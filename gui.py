@@ -4,7 +4,7 @@ import configparser
 from GroupWidget import GroupWidget
 from ResultWidget import ResultWidget
 from pdf_search import Searcher
-from pdf_parser import parse
+from pdf_parser import load_db
 from PyQt5.QtCore import Qt
 from PyQt5.QtWidgets import QApplication, QWidget, QFileDialog, QMessageBox, \
     QHBoxLayout, QGroupBox, QVBoxLayout, QLineEdit, QLabel, QScrollArea
@@ -22,7 +22,7 @@ class App(QWidget):
         self.config = configparser.ConfigParser()
         self.config_file = 'config.ini'
         self.read_config()
-        self.searcher = Searcher(self.config['GENERAL']['RulebookLocation'])
+        self.searcher = Searcher()
         self.horizontal_groupbox = None
         self.horizontal_recommendations = None
         self.recommendations = None
@@ -64,7 +64,6 @@ class App(QWidget):
 
         self.scroll_area.setWidget(self.content_area)
 
-
     def search(self):
         results = []  # [ (term, [title, page, content], count ]
         extended_matches = self.searcher.search(self.line_edit.text())
@@ -76,8 +75,8 @@ class App(QWidget):
         hits = []
         search = [(match["title"], match["page"], match.highlights("content")) for match in matches]
         for title, page, content in search:
-            hits.append((title, page, content))
-        self.update_results(hits)
+            hits.append((title, page, content.replace("\n", " ")))
+        self.update_results(sorted(hits))
 
     def update_results(self, hits):
         self.content_area.clear()
@@ -92,7 +91,7 @@ class App(QWidget):
             for t in sorted(books[b]):
                 if len(t[1]) < 20:
                     continue
-                label = QLabel("Page: {}\n{} ".format(*t))
+                label = QLabel("\tPage: {}\n{} ".format(*t))
                 label.setWordWrap(True)
                 content_layout.addWidget(label)
             if content_layout.count() > 0:
@@ -112,18 +111,13 @@ class App(QWidget):
         QMessageBox.question(self, "Process rulebooks", message, QMessageBox.Ok)
         options = QFileDialog.Options()
         options |= QFileDialog.DontUseNativeDialog
-        directory_name = QFileDialog.getExistingDirectory(self, options=options)
-        if directory_name:
-            parse(directory_name)
-            return directory_name
+        rulebook_location = QFileDialog.getExistingDirectory(self, options=options)
+        if rulebook_location:
+            load_db(rulebook_location)
+            return rulebook_location
 
  
 if __name__ == '__main__':
-    print("Loading language processing toolkit ...")
-    import nltk
-    for dl in ["averaged_perceptron_tagger", "maxent_ne_chunker", "punkt"]:
-        nltk.download(dl, download_dir='nltk_data')
-    print("Done")
     app = QApplication(sys.argv)
     ex = App()
     sys.exit(app.exec_())

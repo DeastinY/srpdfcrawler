@@ -1,86 +1,85 @@
 """Place pdf in pdf/* and parse them using this file."""
-import re
-import io
 import os
-import json
+import sqlite3
 import nltk
+from tqdm import tqdm
 import logging
 import textract
+import configparser
+from pathlib import Path
 
-logging.basicConfig(level=logging.DEBUG)
-nltk.data.path.append('.'+os.sep+'nltk_data')
-
-
-def separate_sentences(tokenized_sentences):
-    """Generates a list where every line is a sentence."""
-    separated = []
-    for t in tokenized_sentences:
-        # expected amount of numbers for a text to be considered part of a table.
-        numbers = re.findall(r'\d+', ' '.join(t))
-        if len(numbers) > 5 and len(numbers) < 100:
-            separated.append(' '.join(t))
-    return separated
+logging.basicConfig(level=logging.INFO)
+PATH = os.path.dirname(os.path.realpath(__file__))
+PATH_DATA = Path(PATH) / 'data'
+PATH_DATA.mkdir(exist_ok=True)
+FILE_DB = PATH_DATA / "data.db"
 
 
-def find_tables(sentences):
-    """Generates a list of potential table entries.
-    INPUT : Output of separated_sentences
-    OUTPUT : List of matched regex"""
-    tables = []
-    for count, sep in enumerate(sentences):
-        #logging.debug("Searching %d/%d ...", count, len(sentences))
-        if not 'preis' in sep.lower():
-            continue
-        pattern = re.compile(r'[^¥\s]+.*?¥')
-        matches = pattern.findall(sep)
-        if len(matches) > 0:
-            tables.append(matches)
-    return tables
-
-
-def extract_weapons(txtfile, tokenized_sentences, write_temp=True):
-    """Tries to extract weapon stats from tables."""
-    logging.info("Extracting weapons")
-    separated = separate_sentences(tokenized_sentences)
-    tables = find_tables(separated)
-    if write_temp:
-        file_name = txtfile.split(".pdf.txt")[0] + "_weapons.txt"
-        with io.open(file_name, 'w', encoding='utf-8') as fout:
-            json.dump(tables, fout, sort_keys=False, indent=4, ensure_ascii=False)
-
-def process(txtfile):
-    """Processes a rulebook."""
-    logging.info("Processing %s", txtfile)
-    with open(txtfile, 'r', encoding='utf-8') as fin:
-        lines = fin.readlines()
-        lines = '\n'.join(lines)
-        logging.debug("Tokenizing")
-        sentences = nltk.sent_tokenize(lines)
-        tokenized_sentences = [nltk.word_tokenize(sentence) for sentence in sentences]
-        extract_weapons(txtfile, tokenized_sentences)
+def load_db(path_rulebooks):
+    if not FILE_DB.exists():
+        get_pdf(path_rulebooks)
+        generate_db()
+        for f in PATH_DATA.iterdir():
+            if f != FILE_DB:
+                f.unlink()
 
 
 def extract_text(file_extraction, file_pdf):
-    logging.info("Extracting text ... ( This may take a minute )")
-    with open(file_extraction, 'w', encoding='utf-8') as fout:
-        text = textract.process(file_pdf).decode('utf-8')
-        fout.write(text)
+    logging.info("Extracting text ... ( This may take a minute or two.)")
+    with file_extraction.open("w", encoding="utf-8") as fout:
+        fout.write(textract.process(str(file_pdf)).decode('utf-8'))
+    logging.info(f"Saved extraction to {file_extraction}")
 
 
-def parse(directory):
-    for root, dirs, files in os.walk(directory):
-        for f in files:
-            if '.pdf' in f.lower() and '.txt' not in f.lower():
-                logging.info("Checking whether an extraction for %s exists ...", f)
-                file_pdf = os.path.join(root, f)
-                file_extraction = file_pdf+'.txt'
-                if os.path.exists(file_extraction):
-                    logging.info("Extraction found !")
-                else:
-                    logging.info("No extraction found !")
-                    extract_text(file_extraction, file_pdf)
-                process(file_extraction)
+def generate_db():
+    """Generates a sqlite database from the extracted txt files."""
+    con = sqlite3.connect(str(FILE_DB))
+    cur = con.cursor()
+    logging.info("Creating Tables")
+    cur.execute(r"CREATE TABLE IF NOT EXISTS TEXT("
+                "ID INTEGER PRIMARY KEY AUTOINCREMENT NOT NULL,"
+                "BOOK INTEGER NOT NULL,"
+                "PAGE INTEGER NOT NULL,"
+                "CONTENT STRING NOT NULL)")
+    cur.execute(r"CREATE TABLE IF NOT EXISTS BOOKS("
+                "ID INTEGER PRIMARY KEY AUTOINCREMENT NOT NULL,"
+                "NAME STRING NOT NULL)")
+    logging.info("Filling Database")
+    books = []
+    for f in tqdm(PATH_DATA.iterdir()):
+        if 'txt' in f.name:
+            name = f.name.split('.')[0]
+            name_id = -1
+            if not name in books:
+                books.append(name)
+                name_id = len(books)-1
+            else:
+                name_id = books.index(books)
+            lines = f.read_text(encoding="utf-8")
+            pages = lines.split('\f')
+            for i, p in enumerate(pages):
+                cur.execute("INSERT INTO TEXT (BOOK, PAGE, CONTENT) VALUES (?, ?, ?)", (name_id, i, p))
+    for i, b in enumerate(books):
+        cur.execute("INSERT INTO BOOKS (ID, NAME) VALUES (?, ?)", (i, b))
+    con.commit()
+    con.close()
+
+
+def get_pdf(path_rulebooks):
+    """
+    Creates text files from PDF files and gathers them locally.
+    """
+    logging.info(f"Getting PDF files from {path_rulebooks}")
+    for f in Path(path_rulebooks).iterdir():
+        if '.pdf' in str(f).lower() and '.txt' not in str(f).lower():
+            logging.debug(f"Checking whether an extraction for {f} exists ...")
+            file_extraction = PATH_DATA / (f.name+'.txt')
+            if file_extraction.exists():
+                logging.debug("Extraction found !")
+            else:
+                logging.debug("No extraction found !")
+                extract_text(file_extraction, f)
 
 
 if __name__ == '__main__':
-    parse('pdf')
+    logging.error("Execute this through gui.py")
