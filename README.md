@@ -8,14 +8,14 @@ At the initial startup an search index is built. This can take quite some time, 
 
 ### Building
 
-Check this for Windows textract : https://github.com/deanmalmgren/textract/issues/111
+##### Information
+- Check this for Windows textract : https://github.com/deanmalmgren/textract/issues/111
+- `pip install https://github.com/pyinstaller/pyinstaller/archive/develop.zip` (PyInstaller currently does not support Python 3.6 on stable.)
+- Read through https://github.com/pyinstaller/pyinstaller/issues/1566 and make sure you have done the following if on Windows:
 
-To build the project with pyinstaller make sure to use the dev branch. PyInstaller currently does not support Python 3.6 on stable.
-Furthermore read through https://github.com/pyinstaller/pyinstaller/issues/1566 and make sure you have done the following if on Windows:
+        The following solved the problem for me (on Win10 v1607 - PyQt5 App):
 
-    The following solved the problem for me (on Win10 v1607 - PyQt5 App):
-
-    Add the directory of the required dlls to system Path. My application uses PyQt5 which is dependent on api-ms-win dlls.
+        Add the directory of the required dlls to system Path. My application uses PyQt5 which is dependent on api-ms-win dlls.
 
         For PyQt5 add this directory: %WHERE EVER YOU INSTALLED PYTHON%\Lib\site-packages\PyQt5\Qt\bin
 
