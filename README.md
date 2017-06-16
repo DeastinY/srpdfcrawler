@@ -33,4 +33,5 @@ At the initial startup an search index is built. This can take quite some time, 
       import sys
       sys.setrecursionlimit(10000)
       
-- `Failed to execute pyi_rth_qt5plugins` - Add your `PyQt5`-Path to pathex in the spec file e.g. `C:\Users\ricc\AppData\Local\Programs\Python\Python36\Lib\site-packages`
+- `Failed to execute pyi_rth_qt5plugins` 
+  - Add your `PyQt5`-Path to pathex in the spec file e.g. `C:\Users\ricc\AppData\Local\Programs\Python\Python36\Lib\site-packages`
