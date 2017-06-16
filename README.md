@@ -7,8 +7,6 @@ At the initial startup an search index is built. This can take quite some time, 
 ![Screenshot of the first Release](screen.png)
 
 ### Building
-
-##### Information
 - Check this for Windows textract : https://github.com/deanmalmgren/textract/issues/111
   - Download the linked zip and extract `pdftotext.exe` to the programs root
   - Add the file to the pyinstaller spec like this : `datas=[('pdftotext.exe', '.')],`
@@ -27,4 +25,10 @@ At the initial startup an search index is built. This can take quite some time, 
 
     After you add the required paths, pyinstaller can find the files.
    
-Build using pyinstaller -F gui.py
+-  Build using pyinstaller -F gui.py
+
+##### Common issues
+- Recursion issues : Add the following to `gui.spec`
+
+      import sys
+      sys.setrecursionlimit(10000)
