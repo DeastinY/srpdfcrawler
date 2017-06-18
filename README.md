@@ -6,7 +6,20 @@ At the initial startup an search index is built. This can take quite some time, 
 
 ![Screenshot of the first Release](screen.png)
 
+### How - To
+I try to provide simple one-click solutions for Windows and Linux. The program does not need to be installed, so take care where you place the executable !
+
+- Head over to [Releases](https://github.com/DeastinY/srpdfcrawler/releases) and download the latest Release
+- Run the executable:
+  - Windows: `Doubleclick srpdfcrawler.exe`
+  - Linux: `chmod a+x srpdfcrawler; ./srpdfcrawler`
+
+That's it ! Be warned though - **the first startup will take quite some time**. Don't close it, just wait until you're prompted for the location of the rulebooks. Then the pdfs are merged into a database and the search index is build.  
+When done you're ready to search ! **Every subsequent start should be fast !**
+
 ### Building
+Build instructions are only relevant for developers and summarize the steps required while giving information on tangential issues.
+
 - Check this for Windows textract : https://github.com/deanmalmgren/textract/issues/111
   - Download the linked zip and extract `pdftotext.exe` to the programs root
   - Add the file to the pyinstaller spec like this : `datas=[('pdftotext.exe', '.')],`
