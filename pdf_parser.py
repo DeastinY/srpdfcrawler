@@ -1,5 +1,6 @@
 """Place pdf in pdf/* and parse them using this file."""
 import os
+import sys
 import sqlite3
 import nltk
 from tqdm import tqdm
@@ -9,7 +10,12 @@ import configparser
 from pathlib import Path
 
 logging.basicConfig(level=logging.INFO)
-PATH = os.path.dirname(os.path.realpath(__file__))
+# determine if application is a script file or frozen exe
+if getattr(sys, 'frozen', False):
+    APPLICATION_PATH = os.path.dirname(sys.executable)
+elif __file__:
+    APPLICATION_PATH = os.path.dirname(__file__)
+PATH = APPLICATION_PATH
 PATH_DATA = Path(PATH) / 'data'
 PATH_DATA.mkdir(exist_ok=True)
 FILE_DB = PATH_DATA / "data.db"

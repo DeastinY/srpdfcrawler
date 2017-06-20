@@ -1,4 +1,5 @@
 import os
+import sys
 import sqlite3
 import logging
 from tqdm import tqdm
@@ -10,7 +11,11 @@ from whoosh.spelling import ListCorrector
 from whoosh.highlight import UppercaseFormatter
 
 logging.basicConfig(level=logging.INFO)
-PATH = os.path.dirname(os.path.realpath(__file__))
+if getattr(sys, 'frozen', False):
+    APPLICATION_PATH = os.path.dirname(sys.executable)
+elif __file__:
+    APPLICATION_PATH = os.path.dirname(__file__)
+PATH = APPLICATION_PATH
 PATH_DATA = Path(PATH) / 'data'
 FILE_DB = PATH_DATA / "data.db"
 
@@ -69,6 +74,7 @@ class Searcher:
                     r"ORDER BY BOOKS.NAME, PAGE")
         for row in tqdm(cur):
             book, page, content = row
+            book, page, content = str(book), str(page), str(content)
             for i in content.split(' '):
                 self.common_terms.add(i)
             if self.index_files:
